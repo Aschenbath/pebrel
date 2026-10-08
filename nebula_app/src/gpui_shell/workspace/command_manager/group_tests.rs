@@ -128,7 +128,7 @@ fn batch_keyboard_filtering_and_failed_delete_preserve_selection(cx: &mut TestAp
     let path = dir.path().join("saved_commands.json");
     let mut saved = crate::saved_commands::SavedCommands::load_from(&path).unwrap();
     let a = saved.insert("Alpha", "echo alpha", true).unwrap();
-    saved.insert("Beta", "echo beta", true).unwrap();
+    saved.insert("QzxBatchFixture", "echo qzx_batch_fixture", true).unwrap();
     let (workspace, mut cx) = open_manager(saved, cx);
     let mode = cx.debug_bounds("command-select-mode").unwrap();
     cx.simulate_click(mode.center(), Modifiers::default());
@@ -147,7 +147,8 @@ fn batch_keyboard_filtering_and_failed_delete_preserve_selection(cx: &mut TestAp
         );
         assert!(this.tabs.is_empty());
     });
-    cx.simulate_input("Beta");
+    // A short fuzzy query such as "Beta" also matches macOS brew recipes.
+    cx.simulate_input("QzxBatchFixture");
     draw(&mut cx);
     assert!(workspace.read_with(&cx, |this, _| this.command_manager_selection.ids.is_empty()));
     let select = cx.debug_bounds("command-select-visible").unwrap();
@@ -176,7 +177,7 @@ fn batch_keyboard_filtering_and_failed_delete_preserve_selection(cx: &mut TestAp
     cx.simulate_click(confirm.center(), Modifiers::default());
     draw(&mut cx);
     assert_eq!(crate::saved_commands::SavedCommands::load_from(&path).unwrap().commands(), &[a]);
-    // The explicit global action must not inherit the still-active Beta filter.
+    // The explicit global action must not inherit the still-active fixture filter.
     let manage = cx.debug_bounds("command-manage-menu").unwrap();
     cx.simulate_click(manage.center(), Modifiers::default());
     draw(&mut cx);
