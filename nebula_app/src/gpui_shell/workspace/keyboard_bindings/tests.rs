@@ -299,6 +299,9 @@ mod dispatch {
     }
 
     fn paste_in_command_dialog(raw: Vec<(String, String)>, restore: bool, cx: &mut TestAppContext) {
+        // Mouse events can render another frame. Keep the entry animation from
+        // moving Save away from its sampled bounds on slower native CI runners.
+        cx.update(|cx| cx.set_reduce_motion(true));
         let (directory, workspace, mut cx) = open_workspace(0, cx);
         workspace.update(&mut cx, |workspace, cx| {
             workspace.saved_commands = crate::saved_commands::SavedCommands::load_from(

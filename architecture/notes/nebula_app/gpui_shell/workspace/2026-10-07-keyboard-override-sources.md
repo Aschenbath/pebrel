@@ -56,8 +56,10 @@ changes. Source identifiers are runtime metadata and must not be reused by other
 ## Validation
 
 `keyboard_bindings/tests.rs` covers actual dialog paste, clear/reset, explicit reassignment,
-foreign registrations, repeated replacements, and updates from multiple windows. Existing
-tab, rename and terminal-encoding regressions remain applicable. The opt-in Windows
+foreign registrations, repeated replacements, and updates from multiple windows. Dialog
+paste tests use reduced motion so the entry animation cannot move Save between reading
+its bounds and dispatching mouse events. Existing tab, rename and terminal-encoding
+regressions remain applicable. The opt-in Windows
 `native_paste_tests.rs` fixture uses the system clipboard and requires external verification
 of the actual input values; it does not execute the pasted commands.
 
