@@ -81,7 +81,10 @@ fn draw(cx: &mut VisualTestContext) {
 fn ssh_launcher_search_matches_tags_notes_and_multiple_keywords(cx: &mut TestAppContext) {
     let (workspace, mut cx) = open(cx);
     for query in ["LINUX", "alice", "生产", "ÉQUIPE", "linux ALICE 生产", "missing-tag"] {
-        cx.simulate_keystrokes(if cfg!(target_os = "macos") { "cmd-a" } else { "ctrl-a" });
+        // 查询替换只依赖输入框的全选动作，不重复判断平台快捷键。
+        cx.update(|window, cx| {
+            window.dispatch_action(Box::new(gpui_component::input::SelectAll), cx);
+        });
         cx.simulate_input(query);
         draw(&mut cx);
         workspace.read_with(&cx, |workspace, cx| {
