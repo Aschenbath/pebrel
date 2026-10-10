@@ -92,6 +92,11 @@ each agent's activity, and read its output without leaving the application.
   a custom folder requires confirmation and keeps its commands in Ungrouped.
   Batch changes reuse the existing locked, refreshed, atomic store transaction;
   the saved file format is unchanged and stale selections preserve unrelated edits.
+- Remapping or disabling terminal shortcuts preserves text fields' native paste keys.
+  Restoring defaults updates existing windows without restarting. Runtime overrides
+  replace their previous rules, avoiding the stale disabled bindings from the append-only
+  path; the saved configuration format is unchanged. See the
+  [shortcut ownership decision](architecture/notes/nebula_app/gpui_shell/workspace/2026-10-07-keyboard-override-sources.md).
 
 ### Intelligent Completion
 
