@@ -74,7 +74,10 @@ fn native_command_preview(ordering: bool) {
                     gpui::WindowOptions {
                         window_bounds: Some(gpui::WindowBounds::Windowed(gpui::Bounds::new(
                             gpui::point(px(60.0), px(60.0)),
-                            gpui::size(px(f32::from(width)), px(720.0)),
+                            gpui::size(
+                                px(f32::from(width)),
+                                px(if ordering { 480.0 } else { 720.0 }),
+                            ),
                         ))),
                         focus: true,
                         show: true,
@@ -129,6 +132,9 @@ fn native_command_preview(ordering: bool) {
             cx.spawn(async move |cx| {
                 cx.background_executor().timer(std::time::Duration::from_millis(800)).await;
                 cx.update_window(handle.into(), |_, window, cx| {
+                    if ordering {
+                        assert!(crate::gpui_shell::reveal_native_window(window));
+                    }
                     let _ = window.draw(cx);
                     if ordering {
                         if std::env::var("PEBREL_COMMAND_QA_STATE").as_deref() == Ok("focus") {
@@ -160,6 +166,7 @@ fn native_command_preview(ordering: bool) {
                     }
                 })
                 .unwrap();
+                cx.background_executor().timer(std::time::Duration::from_millis(200)).await;
                 std::fs::write(output.join("ready"), std::process::id().to_string()).unwrap();
                 for _ in 0..150 {
                     if output.join("capture-complete").exists() {
