@@ -97,6 +97,8 @@ each agent's activity, and read its output without leaving the application.
 - Custom folders and custom commands within a folder have **Move up / Move down**
   controls, replacing creation-only ordering so frequent items can be kept near the
   top. Command controls appear on hover or keyboard focus; Tab, Enter and Space work.
+  At either end, keyboard focus stays in the order controls so further Enter/Space presses do
+  not run a command or open a folder.
   Moves persist across restarts using the existing store transaction and file format.
   Ungrouped and the built-in folder keep their positions; built-in recipes keep their
   catalog order. Search retains its existing ranking and hides ordering controls,

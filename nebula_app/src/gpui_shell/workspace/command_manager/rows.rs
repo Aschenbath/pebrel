@@ -55,7 +55,7 @@ impl NebulaWorkspace {
         let edit_id = command.id.clone();
         let delete_id = command.id.clone();
         let order_buttons =
-            self.render_command_order_buttons(OrderTarget::Command(command.id.clone()), cx);
+            self.render_command_order_buttons(OrderTarget::Command(command.id.clone()), window, cx);
         // 透明而非 hidden，保留按钮的 Tab 顺序；真实键盘聚焦时露出操作区。
         let actions_focus = window
             .use_keyed_state(

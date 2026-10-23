@@ -131,7 +131,22 @@ fn native_command_preview(ordering: bool) {
                 cx.update_window(handle.into(), |_, window, cx| {
                     let _ = window.draw(cx);
                     if ordering {
-                        if let Some(row) = window.debug_bounds_for_selector("saved-command-row-0") {
+                        if std::env::var("PEBREL_COMMAND_QA_STATE").as_deref() == Ok("focus") {
+                            for _ in 0..3 {
+                                window.focus_next(cx);
+                            }
+                            window.dispatch_event(
+                                gpui::PlatformInput::KeyDown(gpui::KeyDownEvent {
+                                    keystroke: gpui::Keystroke::parse("enter").unwrap(),
+                                    is_held: false,
+                                    prefer_character_input: false,
+                                }),
+                                cx,
+                            );
+                            let _ = window.draw(cx);
+                        } else if let Some(row) =
+                            window.debug_bounds_for_selector("saved-command-row-0")
+                        {
                             window.dispatch_event(
                                 gpui::PlatformInput::MouseMove(gpui::MouseMoveEvent {
                                     position: row.center(),

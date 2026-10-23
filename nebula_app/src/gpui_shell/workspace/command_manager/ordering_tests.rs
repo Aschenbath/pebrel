@@ -178,12 +178,29 @@ fn command_order_keyboard_focus_follows_the_moved_command(cx: &mut TestAppContex
     );
     cx.simulate_keystrokes("space");
     draw(&mut cx);
-    assert_eq!(command_ids(&workspace, &cx), [second.id, third.id, first.id]);
+    assert_eq!(
+        command_ids(&workspace, &cx),
+        [second.id.clone(), third.id.clone(), first.id.clone()]
+    );
+    cx.simulate_keystrokes("enter space enter");
+    draw(&mut cx);
     assert_eq!(cx.update(|window, cx| window.notifications(cx).len()), 0);
     workspace.read_with(&cx, |this, _| {
         assert!(this.command_manager_open && this.tabs.is_empty());
         assert_eq!(this.command_manager_selection.cursor, 2);
     });
+    cx.simulate_keystrokes("tab enter");
+    draw(&mut cx);
+    assert_eq!(workspace.read_with(&cx, |this, _| this.command_manager_selection.cursor), 1);
+    cx.simulate_keystrokes("enter");
+    draw(&mut cx);
+    assert_eq!(command_ids(&workspace, &cx), [first.id, second.id, third.id]);
+    cx.simulate_keystrokes("enter space");
+    draw(&mut cx);
+    assert_eq!(cx.update(|window, cx| window.notifications(cx).len()), 0);
+    cx.simulate_keystrokes("escape");
+    draw(&mut cx);
+    assert!(!workspace.read_with(&cx, |this, _| this.command_manager_open));
 }
 
 #[gpui::test]
@@ -205,6 +222,8 @@ fn order_controls_accept_tab_enter_and_space_without_opening_folders(cx: &mut Te
     cx.simulate_keystrokes("space");
     draw(&mut cx);
     assert_eq!(SavedCommands::load_from(&path).unwrap().groups()[2].id, first);
+    cx.simulate_keystrokes("enter space enter");
+    draw(&mut cx);
     assert!(
         cx.update(|window, _| window.debug_bounds_for_selector(&format!("group-move-up-{first}")))
             .is_some()

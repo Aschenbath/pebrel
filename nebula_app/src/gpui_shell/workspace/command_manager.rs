@@ -580,7 +580,7 @@ impl NebulaWorkspace {
                                 cx,
                             ),
                             ManagerRow::Folder { id, name, count } => {
-                                this.render_command_folder(index, id, name, count, cx)
+                                this.render_command_folder(index, id, name, count, window, cx)
                             },
                         })
                         .collect()
