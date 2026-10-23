@@ -182,6 +182,10 @@ class NativeSuiteTests(unittest.TestCase):
         self.assertEqual(config["test-groups"], {"theme-studio": {"max-threads": 1}})
         self.assertEqual(config["profile"]["default"], {
             "overrides": [{
+                "filter": "test(gpui_shell::workspace::startup::tests::)"
+                          " or test(terminal_startup_setting_is_searchable_and_persists)",
+                "test-group": "theme-studio",
+            }, {
                 "filter": "test(gpui_shell::settings_pane::theme_studio_tests::)"
                           " or test(ctrl_wheel_font_zoom_toggle_gates_zoom_and_terminal_scroll)"
                           " or test(ctrl_wheel_font_zoom_setting_is_searchable_and_has_a_visible_switch)"
