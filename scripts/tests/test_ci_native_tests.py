@@ -186,6 +186,10 @@ class NativeSuiteTests(unittest.TestCase):
                           " or test(terminal_startup_setting_is_searchable_and_persists)",
                 "test-group": "theme-studio",
             }, {
+                "filter": "test(=gpui_shell::workspace::terminal_activity::tests::sidebar_spinner_follows_real_collapse_and_window_focus)"
+                          " or test(=gpui_shell::workspace::terminal_activity::tests::top_tab_spinners_share_frames_and_stop_when_running_tab_scrolls_out)",
+                "test-group": "theme-studio",
+            }, {
                 "filter": "test(gpui_shell::settings_pane::theme_studio_tests::)"
                           " or test(ctrl_wheel_font_zoom_toggle_gates_zoom_and_terminal_scroll)"
                           " or test(ctrl_wheel_font_zoom_setting_is_searchable_and_has_a_visible_switch)"
