@@ -93,6 +93,7 @@ fn native_command_preview(ordering: bool) {
                         ))),
                         focus: true,
                         show: true,
+                        window_min_size: ordering.then_some(gpui::size(px(320.0), px(300.0))),
                         ..Default::default()
                     },
                     |window, cx| {
@@ -146,9 +147,27 @@ fn native_command_preview(ordering: bool) {
                 cx.update_window(handle.into(), |_, window, cx| {
                     if ordering {
                         assert!(crate::gpui_shell::reveal_native_window(window));
+                        // Workspace startup fits its default terminal grid first.
+                        window.resize(gpui::size(px(f32::from(width)), px(480.0)));
                     }
                     let _ = window.draw(cx);
+                })
+                .unwrap();
+                cx.background_executor().timer(std::time::Duration::from_millis(200)).await;
+                cx.update_window(handle.into(), |_, window, cx| {
+                    let _ = window.draw(cx);
                     if ordering {
+                        let actual = window.bounds().size;
+                        std::fs::write(
+                            output.join("viewport.json"),
+                            format!(
+                                "{{\"width\":{},\"height\":{},\"scale\":{}}}",
+                                f32::from(actual.width),
+                                f32::from(actual.height),
+                                window.scale_factor()
+                            ),
+                        )
+                        .unwrap();
                         if std::env::var("PEBREL_COMMAND_QA_STATE").as_deref() == Ok("focus") {
                             for _ in 0..3 {
                                 window.focus_next(cx);
@@ -165,6 +184,15 @@ fn native_command_preview(ordering: bool) {
                         } else if let Some(row) =
                             window.debug_bounds_for_selector("saved-command-row-0")
                         {
+                            std::fs::write(
+                                output.join("hover.json"),
+                                format!(
+                                    "{{\"x\":{},\"y\":{}}}",
+                                    f32::from(row.center().x),
+                                    f32::from(row.center().y)
+                                ),
+                            )
+                            .unwrap();
                             window.dispatch_event(
                                 gpui::PlatformInput::MouseMove(gpui::MouseMoveEvent {
                                     position: row.center(),
