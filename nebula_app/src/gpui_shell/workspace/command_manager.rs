@@ -10,6 +10,8 @@ pub(super) use bulk::CommandSelection;
 use bulk::Deletion;
 use clipboard::editor_clipboard_input;
 mod groups;
+mod ordering;
+use ordering::OrderTarget;
 #[cfg(all(test, feature = "gpui-test-support", target_os = "windows"))]
 mod native_paste_tests;
 mod rows;
@@ -783,6 +785,9 @@ mod clipboard_tests;
 
 #[cfg(all(test, feature = "gpui-test-support"))]
 mod group_tests;
+
+#[cfg(all(test, feature = "gpui-test-support"))]
+mod ordering_tests;
 
 #[cfg(all(test, feature = "gpui-test-support"))]
 mod native_tests;
