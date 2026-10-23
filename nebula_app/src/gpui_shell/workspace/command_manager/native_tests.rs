@@ -9,7 +9,7 @@ fn native_command_bulk_preview() {
 }
 
 #[test]
-#[ignore = "requires a native desktop and PEBREL_COMMAND_QA_DIR"]
+#[ignore = "requires a native desktop, PEBREL_COMMAND_QA_DIR and isolated PEBREL_CONFIG_DIR"]
 fn native_command_order_preview() {
     native_command_preview(true);
 }
@@ -45,6 +45,27 @@ fn native_command_preview(ordering: bool) {
     } else {
         nebula_settings::ThemeName::Nord
     };
+    if ordering {
+        let config = output.join("config");
+        assert_eq!(
+            std::env::var_os("PEBREL_CONFIG_DIR").map(std::path::PathBuf::from),
+            Some(config.clone())
+        );
+        std::fs::create_dir_all(&config).unwrap();
+        let language = if std::env::var("PEBREL_COMMAND_QA_LANGUAGE").as_deref() == Ok("zh-CN") {
+            "zh-CN"
+        } else {
+            "en-US"
+        };
+        std::fs::write(
+            config.join("pebrel_settings.txt"),
+            format!(
+                "language={language}\ntheme={}\nfollow_system_theme=0\ntray=0\n",
+                theme.prompt_name()
+            ),
+        )
+        .unwrap();
+    }
     let width = std::env::var("PEBREL_COMMAND_QA_WIDTH")
         .ok()
         .and_then(|value| value.parse::<u16>().ok())
@@ -54,16 +75,7 @@ fn native_command_preview(ordering: bool) {
         move |cx| {
             let hub = crate::runtime_api::RuntimeHub::new();
             gpui_component::init(cx);
-            let mut settings = crate::gpui_shell::config::Settings::load(theme);
-            if ordering {
-                settings.ui_language =
-                    if std::env::var("PEBREL_COMMAND_QA_LANGUAGE").as_deref() == Ok("zh-CN") {
-                        crate::i18n::UiLanguage::ZhCn
-                    } else {
-                        crate::i18n::UiLanguage::EnUs
-                    };
-            }
-            cx.set_global(settings);
+            cx.set_global(crate::gpui_shell::config::Settings::load(theme));
             crate::gpui_shell::theme::apply_chrome_theme(cx);
             crate::gpui_shell::math_view::register(cx);
             crate::gpui_shell::file_editor::init(cx);
