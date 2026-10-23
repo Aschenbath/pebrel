@@ -1,4 +1,11 @@
 {
+  "welcome": {
+    "tab": "欢迎",
+    "title": "欢迎使用 Pebrel",
+    "description": "打开默认 Shell，或选择 SSH 主机。",
+    "local": "本地终端",
+    "ssh": "打开 SSH 会话"
+  },
   "native_result": {
     "fold_expand": "已省略 {count} 行 · 展开",
     "fold_collapse": "收起中间 {count} 行",
@@ -174,6 +181,12 @@
     }
   },
   "settings": {
+    "terminal_startup": {
+      "label": "终端启动行为",
+      "description": "选择新窗口和新标签的初始页面。已保存的会话以及指定 Shell 或命令的启动方式保持原有行为。",
+      "shell": "直接打开默认 Shell",
+      "welcome": "显示欢迎页"
+    },
     "quick_terminal_unavailable": "全局快捷键注册失败：{error}。请启用桌面的 GlobalShortcuts portal，或从托盘打开 Pebrel。",
     "completion": {
       "mode": "补齐模式",

@@ -40,6 +40,9 @@ impl Render for NebulaWorkspace {
                 .map(|(view, _)| gpui::IntoElement::into_any_element(view.clone()))
         } else {
             match self.tabs.get(self.active) {
+                Some(WorkspaceTab::Welcome { view, .. }) => {
+                    Some(gpui::IntoElement::into_any_element(view.clone()))
+                },
                 Some(WorkspaceTab::Terminal { .. }) => {
                     Some(self.render_terminal_tab(self.active, cx))
                 },

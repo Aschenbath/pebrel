@@ -106,6 +106,7 @@ mod transfer_tests;
 pub(crate) enum WorkspaceStartup {
     RestoreOrDefault,
     RestoreUpdate(crate::session::Session),
+    Configured { cwd: Option<PathBuf> },
     NewTerminal { cwd: Option<PathBuf> },
     LaunchTerminal { cwd: Option<PathBuf>, launch: crate::session::LaunchSession },
     Empty,
@@ -535,16 +536,19 @@ fn open_workspace_window(
     Ok((runtime_window_id, workspace))
 }
 
-pub(crate) fn open_new_window(cx: &mut App, cwd: Option<PathBuf>) -> gpui::Result<(u64, u64)> {
+pub(crate) fn open_new_window(
+    cx: &mut App,
+    cwd: Option<PathBuf>,
+) -> gpui::Result<(u64, Option<u64>)> {
     let (window_id, workspace) = open_workspace_window(
         cx,
-        WorkspaceStartup::NewTerminal { cwd },
+        WorkspaceStartup::Configured { cwd },
         None,
         None,
         true,
         WindowRole::Regular,
     )?;
-    let pane_id = workspace.read(cx).active_terminal_pane_id().unwrap_or_default();
+    let pane_id = workspace.read(cx).active_terminal_pane_id();
     Ok((window_id, pane_id))
 }
 
@@ -552,12 +556,17 @@ fn open_runtime_window(
     cx: &mut App,
     cwd: Option<PathBuf>,
     shell_id: Option<String>,
-) -> Result<(u64, u64), ApiError> {
-    let startup = runtime_window_startup(cwd, shell_id.as_deref())?;
+    use_startup_setting: bool,
+) -> Result<(u64, Option<u64>), ApiError> {
+    let startup = if use_startup_setting {
+        WorkspaceStartup::Configured { cwd }
+    } else {
+        runtime_window_startup(cwd, shell_id.as_deref())?
+    };
     let (window_id, workspace) =
         open_workspace_window(cx, startup, None, None, false, WindowRole::Regular)
             .map_err(|error| ApiError::new("window_create_failed", error.to_string()))?;
-    let pane_id = workspace.read(cx).active_terminal_pane_id().unwrap_or_default();
+    let pane_id = workspace.read(cx).active_terminal_pane_id();
     Ok((window_id, pane_id))
 }
 
@@ -987,32 +996,34 @@ fn dispatch_runtime(dispatch: Arc<RuntimeDispatch>, cx: &mut App) {
             );
             return;
         },
-        RuntimeCommand::NewWindow { cwd, shell_id } => {
-            let response = open_runtime_window(cx, cwd.clone(), shell_id.clone()).map(
-                |(window_id, pane_id)| {
-                    let snapshot = publish_runtime_snapshot(cx);
-                    json!({
-                        "action": { "window_id": window_id, "pane_id": pane_id },
-                        "snapshot": snapshot
-                    })
-                },
-            );
+        RuntimeCommand::NewWindow { cwd, shell_id, use_startup_setting } => {
+            let response =
+                open_runtime_window(cx, cwd.clone(), shell_id.clone(), *use_startup_setting).map(
+                    |(window_id, pane_id)| {
+                        let snapshot = publish_runtime_snapshot(cx);
+                        json!({
+                            "action": { "window_id": window_id, "pane_id": pane_id },
+                            "snapshot": snapshot
+                        })
+                    },
+                );
             dispatch.respond(response);
             return;
         },
-        RuntimeCommand::NewTab { window_id: None, cwd, shell_id }
+        RuntimeCommand::NewTab { window_id: None, cwd, shell_id, use_startup_setting }
             if nebula_settings::RuntimeSettings::load().windowing_behavior
                 == nebula_settings::WindowingBehaviorName::UseNew =>
         {
-            let response = open_runtime_window(cx, cwd.clone(), shell_id.clone()).map(
-                |(window_id, pane_id)| {
-                    let snapshot = publish_runtime_snapshot(cx);
-                    json!({
-                        "action": { "window_id": window_id, "pane_id": pane_id },
-                        "snapshot": snapshot
-                    })
-                },
-            );
+            let response =
+                open_runtime_window(cx, cwd.clone(), shell_id.clone(), *use_startup_setting).map(
+                    |(window_id, pane_id)| {
+                        let snapshot = publish_runtime_snapshot(cx);
+                        json!({
+                            "action": { "window_id": window_id, "pane_id": pane_id },
+                            "snapshot": snapshot
+                        })
+                    },
+                );
             dispatch.respond(response);
             return;
         },
@@ -1050,18 +1061,21 @@ fn dispatch_runtime(dispatch: Arc<RuntimeDispatch>, cx: &mut App) {
         Err(_error)
             if matches!(dispatch.command, RuntimeCommand::NewTab { window_id: None, .. }) =>
         {
-            let RuntimeCommand::NewTab { cwd, shell_id, .. } = &dispatch.command else {
+            let RuntimeCommand::NewTab { cwd, shell_id, use_startup_setting, .. } =
+                &dispatch.command
+            else {
                 unreachable!()
             };
-            let response = open_runtime_window(cx, cwd.clone(), shell_id.clone()).map(
-                |(window_id, pane_id)| {
-                    let snapshot = publish_runtime_snapshot(cx);
-                    json!({
-                        "action": { "window_id": window_id, "pane_id": pane_id },
-                        "snapshot": snapshot
-                    })
-                },
-            );
+            let response =
+                open_runtime_window(cx, cwd.clone(), shell_id.clone(), *use_startup_setting).map(
+                    |(window_id, pane_id)| {
+                        let snapshot = publish_runtime_snapshot(cx);
+                        json!({
+                            "action": { "window_id": window_id, "pane_id": pane_id },
+                            "snapshot": snapshot
+                        })
+                    },
+                );
             dispatch.respond(response);
             return;
         },
@@ -1827,14 +1841,23 @@ mod tests {
             RuntimeWindowPolicy::Focus
         );
         assert_eq!(
-            runtime_window_policy(&RuntimeCommand::NewWindow { cwd: None, shell_id: None }),
+            runtime_window_policy(&RuntimeCommand::NewWindow {
+                cwd: None,
+                shell_id: None,
+                use_startup_setting: false
+            }),
             RuntimeWindowPolicy::CreateWithoutActivation
         );
 
         let preserve = vec![
             RuntimeCommand::Snapshot,
             RuntimeCommand::CloseWindow { window_id: Some(1) },
-            RuntimeCommand::NewTab { window_id: Some(1), cwd: None, shell_id: None },
+            RuntimeCommand::NewTab {
+                window_id: Some(1),
+                cwd: None,
+                shell_id: None,
+                use_startup_setting: false,
+            },
             RuntimeCommand::CloseTab { window_id: Some(1), tab_index: 0 },
             RuntimeCommand::RenameTab {
                 window_id: Some(1),

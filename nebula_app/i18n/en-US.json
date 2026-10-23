@@ -1,4 +1,11 @@
 {
+  "welcome": {
+    "tab": "Welcome",
+    "title": "Welcome to Pebrel",
+    "description": "Open your default shell or choose an SSH host.",
+    "local": "Local terminal",
+    "ssh": "Open SSH session"
+  },
   "native_result": {
     "fold_expand": "{count} lines omitted · Expand",
     "fold_collapse": "Collapse the middle {count} lines",
@@ -174,6 +181,12 @@
     }
   },
   "settings": {
+    "terminal_startup": {
+      "label": "Terminal startup",
+      "description": "Choose what new windows and tabs show. Saved sessions and explicit shell or command launches keep their existing behavior.",
+      "shell": "Open default shell",
+      "welcome": "Show welcome page"
+    },
     "quick_terminal_unavailable": "Global shortcut could not be registered: {error}. Enable a GlobalShortcuts desktop portal or use the tray to show Pebrel.",
     "completion": {
       "mode": "Completion mode",
