@@ -40,6 +40,12 @@ subscription and optional working-directory snapshot, with no terminal pane.
 Both choices use existing launch entry points. Local uses the configured local
 shell; SSH opens the existing host list without copying host or credential state.
 
+Cross-window transfer keeps the live view, captured directory and tab metadata.
+The drag payload freezes the Runtime tab ID so a reorder cannot redirect the
+transfer and welcome requires no invented pane identity. The receiving workspace
+rebinds the event subscription and owns subsequent choices. Welcome pages attach
+as separate tabs; only terminal tabs are eligible for split docking.
+
 After a launch entry creates a terminal tab, startup orchestration adopts it into
 the welcome tab's slot. It preserves the original Runtime tab ID, custom metadata
 and position while taking the new terminal's launch identity. Event source entity
@@ -85,6 +91,9 @@ The Runtime schema remains version 1 with additive capability negotiation.
 [Behavioral fixtures](../../../../../../nebula_app/src/gpui_shell/workspace/startup/tests.rs)
 cover actual controls, keyboard navigation, narrow Chinese layout, tab identity,
 retired events, restore/explicit paths and opt-in Runtime tab creation.
+[Cross-window fixtures](../../../../../../nebula_app/src/gpui_shell/workspace/windowing/welcome_transfer_tests.rs)
+cover tear-out, live view and metadata preservation, separate-tab attachment,
+stale drag payloads and event ownership after transfer.
 [Native fixture](../../../../../../nebula_app/src/gpui_shell/workspace/startup/native_tests.rs)
 provides repeatable desktop review with owned shutdown and isolated configuration.
 Settings and Runtime tests cover default/reset/round-trip behavior and invalid

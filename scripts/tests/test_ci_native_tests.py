@@ -188,7 +188,9 @@ class NativeSuiteTests(unittest.TestCase):
             }, {
                 "filter": "test(=gpui_shell::workspace::terminal_activity::tests::sidebar_spinner_follows_real_collapse_and_window_focus)"
                           " or test(=gpui_shell::workspace::terminal_activity::tests::top_tab_spinners_share_frames_and_stop_when_running_tab_scrolls_out)"
-                          " or test(=gpui_shell::workspace::settings_navigation::ui_tests::density_changes_real_tab_bounds_and_sidebar_drag_pitch)",
+                          " or test(=gpui_shell::workspace::settings_navigation::ui_tests::density_changes_real_tab_bounds_and_sidebar_drag_pitch)"
+                          " or test(=gpui_shell::workspace::windowing::transfer_tests::alt_drag_survives_nc_move_and_tears_out_via_real_events)"
+                          " or test(=gpui_shell::workspace::windowing::transfer_tests::release_outside_source_window_tears_out_without_alt)",
                 "test-group": "theme-studio",
             }, {
                 "filter": "test(gpui_shell::settings_pane::theme_studio_tests::)"

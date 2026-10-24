@@ -250,6 +250,9 @@ directory, while SSH opens the existing host list. Changing this preference affe
 subsequent windows and tabs. Saved sessions restore first; explicit shell/command
 launches, Quick Terminal and automation still open terminals directly. The saved
 key is `terminal_startup=shell|welcome`; welcome pages are not saved as sessions.
+Welcome tabs can move into new or existing windows while keeping the start
+directory and both session choices available. Moving them starts no shell; they
+remain separate tabs, including when dropped beside a terminal.
 
 In **Settings → Terminal → Alerts**, **Notification duration** selects **Use defaults**,
 5, 10, 30, or 90 seconds, or **Until dismissed**. The default preserves existing

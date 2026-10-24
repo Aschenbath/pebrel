@@ -95,7 +95,7 @@ impl NebulaWorkspace {
         cx.notify();
     }
 
-    fn on_welcome_event(
+    pub(super) fn on_welcome_event(
         &mut self,
         view: &Entity<WelcomeView>,
         event: &WelcomeEvent,
