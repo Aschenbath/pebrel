@@ -329,6 +329,7 @@ impl TerminalView {
             inline_images: super::super::inline_image::InlineImageStore::default(),
             image_paste: image_paste::ImagePasteState::default(),
             file_paste: file_paste::FilePasteState::default(),
+            native_clipboard: native_clipboard::NativeClipboard::default(),
             path_drop: path_drop::PathDropState::default(),
             ssh_destination,
             port_forwards: Vec::new(),
