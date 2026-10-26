@@ -6,6 +6,18 @@ Every release entry is provided in English and Simplified Chinese.
 
 ## 2.3.1 - 2026-10-26
 
+- `Pebrel-v2.3.1-linux-x64-preview.AppImage`: `PENDING FINAL BUILD`
+- `Pebrel-v2.3.1-linux-x64-preview.deb`: `PENDING FINAL BUILD`
+- `Pebrel-v2.3.1-linux-x64-preview.tar.gz`: `PENDING FINAL BUILD`
+- `Pebrel-v2.3.1-macos-arm64-preview.dmg`: `PENDING FINAL BUILD`
+- `Pebrel-v2.3.1-macos-x64-preview.dmg`: `PENDING FINAL BUILD`
+- `Pebrel-v2.3.1-windows-x64.zip`: `PENDING FINAL BUILD`
+- `Pebrel-v2.3.1-windows-x64-setup.exe`: `PENDING FINAL BUILD`
+- `Pebrel-v2.3.1-windows-arm64.zip`: `PENDING FINAL BUILD`
+- `Pebrel-v2.3.1-windows-arm64-setup.exe`: `PENDING FINAL BUILD`
+- `Pebrel-v2.3.1-android-universal-preview.apk`: `PENDING FINAL BUILD`
+- `Pebrel-v2.3.1-relay-manual.tar.gz`: `PENDING FINAL BUILD`
+
 ### English
 
 This maintenance release restores comfortable terminal text spacing while keeping supported character-art logos in proportion. It also makes the default interface font explicit and updates the approved sponsor presentation.
@@ -47,20 +59,6 @@ Packages include Windows x64/ARM64 installers and portable ZIPs, macOS Apple Sil
 Thanks to [Kuddev](https://github.com/Kuddev) for the fixes, documentation and release integration.
 
 感谢 [Kuddev](https://github.com/Kuddev) 对本版修复、文档与发布整合的贡献。
-
-### SHA256
-
-- `Pebrel-v2.3.1-linux-x64-preview.AppImage`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-linux-x64-preview.deb`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-linux-x64-preview.tar.gz`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-macos-arm64-preview.dmg`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-macos-x64-preview.dmg`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-windows-x64.zip`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-windows-x64-setup.exe`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-windows-arm64.zip`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-windows-arm64-setup.exe`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-android-universal-preview.apk`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-relay-manual.tar.gz`: `PENDING FINAL BUILD`
 
 ## 2.3.0 - 2026-10-26
 
