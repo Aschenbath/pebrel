@@ -4,19 +4,21 @@ Every release entry is provided in English and Simplified Chinese.
 
 每个版本条目均同时提供英文和简体中文说明。
 
-## 2.3.1 - 2026-10-26
+## 2.3.1 - 2026-10-27
 
-- `Pebrel-v2.3.1-linux-x64-preview.AppImage`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-linux-x64-preview.deb`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-linux-x64-preview.tar.gz`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-macos-arm64-preview.dmg`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-macos-x64-preview.dmg`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-windows-x64.zip`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-windows-x64-setup.exe`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-windows-arm64.zip`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-windows-arm64-setup.exe`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-android-universal-preview.apk`: `PENDING FINAL BUILD`
-- `Pebrel-v2.3.1-relay-manual.tar.gz`: `PENDING FINAL BUILD`
+```text
+b40bcd922e7340b51893c247695b4b286d330b4e7b27238694a4aee3c345f94b  Pebrel-v2.3.1-android-universal-preview.apk
+516045e26444aa161e4abef7a74cf7e4dbcbe4eecd059c5bfb923da98e33f786  Pebrel-v2.3.1-linux-x64-preview.AppImage
+59bff08d2f07f044029b15c50bb37c2e6b0dca1bb9f82611a80ad03c221f4d85  Pebrel-v2.3.1-linux-x64-preview.deb
+de7586f1afc0d7abea1a4ba20805a7c030f9d281570d2fb25e01a44146ee0808  Pebrel-v2.3.1-linux-x64-preview.tar.gz
+0260651ee08fdb384a5441bb3db836690f4296dd6b45ba4a45e360831f3d8a2f  Pebrel-v2.3.1-macos-arm64-preview.dmg
+2043effa1328dcd5d7926a4139668fb85a416a69654308ea816de67e8c564a6d  Pebrel-v2.3.1-macos-x64-preview.dmg
+a86bc7d886c388089be3208f51d619c47bef29014b9688171f553eb9f20a30fd  Pebrel-v2.3.1-relay-manual.tar.gz
+0b64c4d5cf4c60c7fa40d3f340105b97889cf08d25bd7f9c66079490950c4ee6  Pebrel-v2.3.1-windows-arm64-setup.exe
+583aa3a42b78ed43df732c0d17894482807a6ec5911264e902b5009f7e876605  Pebrel-v2.3.1-windows-arm64.zip
+9e21164f493a1b05fcdc3102baf316371e099e5d0532f5f8a26b2bfae9f0472b  Pebrel-v2.3.1-windows-x64-setup.exe
+e12dcfb573ac5d20e06b234202f1065af12b04979311a2ca10a97969a92f70e5  Pebrel-v2.3.1-windows-x64.zip
+```
 
 ### English
 
@@ -55,6 +57,10 @@ Packages include Windows x64/ARM64 installers and portable ZIPs, macOS Apple Sil
 - 改进 Linux CI 依赖下载，使用 Ubuntu 官方软件源，保留软件包签名校验与现有原生测试矩阵。 ([#787](https://github.com/Kuddev/pebrel/pull/787))
 
 ### Contributors
+
+<p>
+  <a href="https://github.com/Kuddev"><img src="https://avatars.githubusercontent.com/u/292709043?v=4&amp;s=96" width="48" height="48" alt="Kuddev" title="Kuddev" /></a>
+</p>
 
 Thanks to [Kuddev](https://github.com/Kuddev) for the fixes, documentation and release integration.
 
