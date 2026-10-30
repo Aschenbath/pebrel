@@ -353,7 +353,7 @@ impl TerminalView {
         }
     }
 
-    /// 普通全屏 TUI（lazygit、btop、vim、tmux……）占据 alternate screen 时是在等
+    /// 普通全屏 TUI（lazygit、btop、vim、终端复用器……）占据 alternate screen 时是在等
     /// 人操作，它自己的界面就是进度；spinner 表达的「等它跑完」不成立（#805）。
     /// 只改 badge：RuntimeTaskState 仍是 Running，关闭确认与 agent.wait 不受影响。
     /// Agent（不论屏幕形态）、OSC 7501 状态和未就绪的 SSH 连接照常转圈；OSC 9;4
