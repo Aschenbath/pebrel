@@ -310,8 +310,9 @@ fn shell_pointer_powershell_uses_owned_native_chords_and_mode_aware_keys(cx: &mu
         assert_eq!(input(&receiver), wire(4));
         window.simulate_keystrokes("backspace");
         assert_eq!(input(&receiver), [wire(4099), wire(8198)].concat());
-        #[cfg(windows)]
-        if native_console {
+        if native_console
+            && crate::platform::Platform::current() == crate::platform::Platform::Windows
+        {
             assert!(wire(1).ends_with(b"_"), "negotiated native records must not fall back to VT");
         }
     }
