@@ -23,9 +23,10 @@ pub use self::windows::*;
 pub fn connection_shell() -> &'static str {
     static SCRIPT: LazyLock<Cow<'static, str>> = LazyLock::new(|| {
         Cow::Owned(format!(
-            "{}\n{}\n{}",
+            "{}\n{}\n{}\n{}",
             shell_line_endings(include_str!("connection.sh")),
             shell_line_endings(include_str!("completion.sh")),
+            shell_line_endings(include_str!("pointer.sh")),
             shell_line_endings(include_str!("command.sh"))
         ))
     });
