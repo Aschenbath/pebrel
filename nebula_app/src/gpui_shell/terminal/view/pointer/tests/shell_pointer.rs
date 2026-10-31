@@ -269,3 +269,81 @@ fn shell_pointer_does_not_query_output_or_ai_fullscreen_input(cx: &mut TestAppCo
         }
     }
 }
+
+#[gpui::test]
+fn shell_pointer_powershell_uses_owned_native_chords_and_mode_aware_keys(cx: &mut TestAppContext) {
+    for native_console in [false, true] {
+        let (view, mut window, receiver) = fixture(cx);
+        let owner = "pwsh:42:pointer-fixture";
+        view.update(&mut window, |view, cx| {
+            report(view, "pebrel_shell", owner, cx);
+            report(view, "pebrel_pointer_ready", owner, cx);
+            if native_console {
+                super::super::super::startup_tests::feed(view, b"\x1b[?9001h");
+            }
+        });
+        let mode = view.read_with(&window, |view, _| view.term_mode());
+        let wire = |argument: usize| {
+            let prefix = super::super::super::super::keymap::encode(
+                &gpui::Keystroke::parse("ctrl-shift-f10").unwrap(),
+                &mode,
+            )
+            .unwrap();
+            let query = super::super::super::super::keymap::encode(
+                &gpui::Keystroke::parse("ctrl-shift-f12").unwrap(),
+                &mode,
+            )
+            .unwrap();
+            let mut bytes = Vec::new();
+            for digit in argument.to_string().bytes() {
+                bytes.extend_from_slice(&prefix);
+                bytes.push(digit);
+            }
+            bytes.extend(query);
+            bytes
+        };
+        gesture(&view, &mut window, 3.1, 4.9);
+        assert_eq!(input(&receiver), wire(20000));
+        view.update(&mut window, |view, cx| {
+            report(view, "pebrel_pointer", &format!("{owner}\nutf8:20000\n6\nabcdef"), cx);
+        });
+        assert_eq!(input(&receiver), wire(4));
+        window.simulate_keystrokes("backspace");
+        assert_eq!(input(&receiver), [wire(4099), wire(8198)].concat());
+        #[cfg(windows)]
+        if native_console {
+            assert!(wire(1).ends_with(b"_"), "negotiated native records must not fall back to VT");
+        }
+    }
+}
+
+#[gpui::test]
+fn shell_pointer_native_undo_preserves_only_the_current_powershell_prompt(cx: &mut TestAppContext) {
+    for (owner, alternate_screen, preserves) in [
+        ("pwsh:42:pointer-fixture", false, true),
+        (OWNER, false, false),
+        ("pwsh:42:pointer-fixture", true, false),
+    ] {
+        for key in ["ctrl-x", "ctrl-z"] {
+            let (view, mut window, receiver) = fixture(cx);
+            view.update(&mut window, |view, cx| {
+                report(view, "pebrel_shell", owner, cx);
+                report(view, "pebrel_pointer_ready", owner, cx);
+                if alternate_screen {
+                    super::super::super::startup_tests::feed(view, b"\x1b[?1049h");
+                }
+            });
+            // The mounted terminal receives keyboard input after gaining focus.
+            gesture(&view, &mut window, 3.1, 3.1);
+            input(&receiver);
+            window.simulate_keystrokes(key);
+            assert!(!input(&receiver).is_empty(), "native key must still reach PSReadLine");
+            view.read_with(&window, |view, _| {
+                assert_eq!(
+                    view.session.as_ref().unwrap().term.lock().nebula_prompt_active(),
+                    preserves
+                );
+            });
+        }
+    }
+}

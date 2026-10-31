@@ -911,7 +911,8 @@ impl TerminalView {
 
     /// 输入后回到底部并请求重绘。
     fn write_input(&mut self, bytes: Vec<u8>, cx: &mut Context<Self>) {
-        let preserves_prompt = super::event_mailbox::preserves_native_prompt(&bytes);
+        let preserves_prompt = super::event_mailbox::preserves_native_prompt(&bytes)
+            || self.shell_pointer_preserves_native_undo(&bytes);
         self.write_editor_input(bytes, preserves_prompt, cx);
     }
 
