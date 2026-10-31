@@ -1,5 +1,6 @@
 # Native line-editor operations reuse the owned query binding and numeric argument.
 # 0=query; 1..4097=move; 4098..8194=range start; 8195..12291=delete to endpoint.
+# 20000..999999=query with a host nonce, echoed in the response unit.
 # Readline rejects arguments above 1,000,000, so endpoints travel separately.
 __pebrel_pointer_supported() {
     [ "${__pebrel_editor_ready:-0}" = 1 ] || return 1
@@ -35,16 +36,18 @@ __pebrel_pointer_emit() {
 }
 
 __pebrel_pointer_action() {
-    local argument=$1 line point owner prefix bytes target first last
+    local argument=$1 line point owner prefix bytes target first last unit=utf8
     case $argument in ''|*[!0-9]*) return ;; esac
-    [ ${#argument} -le 5 ] && [ "$argument" -le 12291 ] || return
+    [ ${#argument} -le 6 ] && [ "$argument" -le 999999 ] || return
+    [ "$argument" -le 12291 ] || [ "$argument" -ge 20000 ] || return
     owner=$(printf '%s' "$__pebrel_shell_token" | base64 -d)
     if [ -n "${BASH_VERSION-}" ]; then line=$READLINE_LINE; point=$READLINE_POINT
     else line=$BUFFER; point=$CURSOR; fi
-    if [ "$argument" = 0 ]; then
+    if [ "$argument" = 0 ] || [ "$argument" -ge 20000 ]; then
+        [ "$argument" = 0 ] || unit=utf8:$argument
         unset __pebrel_pointer_line __pebrel_pointer_point __pebrel_pointer_anchor
         if ! __pebrel_pointer_supported; then
-            __pebrel_pointer_emit pebrel_pointer "$owner"$'\nunsupported'
+            __pebrel_pointer_emit pebrel_pointer "$owner"$'\n'"${unit/utf8/unsupported}"
             return
         fi
         # Store the native editor state, not terminal echo or a keystroke mirror.
@@ -58,9 +61,9 @@ __pebrel_pointer_action() {
         bytes=${#prefix}
         if [ ${#line} -gt 4096 ]; then
             unset __pebrel_pointer_line __pebrel_pointer_point
-            __pebrel_pointer_emit pebrel_pointer "$owner"$'\nunsupported'
+            __pebrel_pointer_emit pebrel_pointer "$owner"$'\n'"${unit/utf8/unsupported}"
         else
-            __pebrel_pointer_emit pebrel_pointer "$owner"$'\nutf8\n'"$bytes"$'\n'"$line"
+            __pebrel_pointer_emit pebrel_pointer "$owner"$'\n'"$unit"$'\n'"$bytes"$'\n'"$line"
         fi
         return
     fi

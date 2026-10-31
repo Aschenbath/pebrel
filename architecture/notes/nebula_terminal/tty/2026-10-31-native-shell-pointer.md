@@ -21,6 +21,9 @@ input epoch alone cannot detect every native editor widget.
 Readline accepts numeric arguments only up to 1,000,000. Larger packed ranges can
 reset the argument and reinterpret following digits. The protocol therefore uses
 separate bounded endpoint operations, each at most 12291.
+Numbered query arguments from 20000 through 999999 also preserve the native
+buffer in real PTYs; the response echoes that nonce. A lost reply can therefore
+be replaced without matching a late response to a different pointer gesture.
 
 ## Decision
 

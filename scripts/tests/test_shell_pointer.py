@@ -28,8 +28,8 @@ class ShellPointerTests(unittest.TestCase):
         encoded = b"".join(b"\x1b" + digit.encode() for digit in str(argument))
         os.write(session.master, encoded + b"\x1b[45~")
 
-    def query(self, session) -> tuple[int, str]:
-        self.action(session, 0)
+    def query(self, session, nonce: int = 0) -> tuple[int, str]:
+        self.action(session, nonce)
         output = session.wait(b"SetUserVar=pebrel_pointer=")
         match = re.search(rb"SetUserVar=pebrel_pointer=([^\x07]+)\x07", output)
         if match is None:
@@ -38,7 +38,7 @@ class ShellPointerTests(unittest.TestCase):
         self.assertIsNotNone(match, output)
         owner, unit, cursor, line = base64.b64decode(match[1]).decode().split("\n", 3)
         self.assertTrue(owner.startswith(("bash:", "zsh:")), owner)
-        self.assertEqual(unit, "utf8")
+        self.assertEqual(unit, f"utf8:{nonce}" if nonce else "utf8")
         return int(cursor), line
 
     def check_edit(self, shell: str) -> None:
@@ -105,6 +105,16 @@ class ShellPointerTests(unittest.TestCase):
 
     def test_zsh_reverse_range_and_invalid_coordinates(self) -> None:
         self.check_reverse_and_bounds("zsh")
+
+    def test_numbered_queries_echo_nonce_without_inserting_digits(self) -> None:
+        for shell in ("bash", "zsh"):
+            with self.subTest(shell=shell):
+                session = self.start(shell)
+                os.write(session.master, "echo 中文".encode())
+                for nonce in (20000, 20001, 999999):
+                    self.assertEqual(self.query(session, nonce), (11, "echo 中文"))
+                self.action(session, 1 + 5)
+                self.assertEqual(self.editor.snapshot(session)[1:], (5, "echo 中文"))
 
     def check_binding(self, shell: str, vi: bool = False) -> None:
         if vi:
