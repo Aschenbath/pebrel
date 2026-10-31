@@ -48,8 +48,9 @@ impl SearchFocus {
 impl SettingsPane {
     pub(super) fn matching_settings_sections(&self, cx: &App) -> Vec<usize> {
         let query = self.settings_search_input.read(cx).value();
-        let mut sections = matching_sections(&query, crate::gpui_shell::config::ui_language(cx));
-        if self.keymap_matches_query(&query) && !sections.contains(&7) {
+        let language = crate::gpui_shell::config::ui_language(cx);
+        let mut sections = matching_sections(&query, language);
+        if self.keymap_matches_query(&query, language) && !sections.contains(&7) {
             sections.push(7);
         }
         sections
@@ -57,10 +58,17 @@ impl SettingsPane {
     pub(super) fn update_settings_search(&mut self, cx: &mut Context<Self>) {
         let searching = !self.settings_search_input.read(cx).value().trim().is_empty();
         if searching {
-            self.search_origin_section.get_or_insert(self.active_section);
+            let origin = *self.search_origin_section.get_or_insert(self.active_section);
             let sections = self.matching_settings_sections(cx);
-            if let Some(index) = sections.first() {
-                self.active_section = *index;
+            // Keep action searches started on Keymap there, even when an alias
+            // such as "Copy" also matches another section's controls.
+            let target = if origin == 7 && sections.contains(&7) {
+                Some(7)
+            } else {
+                sections.first().copied()
+            };
+            if let Some(index) = target {
+                self.active_section = index;
                 self.font_picker_open = false;
                 self.bg_picker_open = false;
             }
@@ -126,11 +134,15 @@ pub(super) fn matching_sections(query: &str, language: crate::display::UiLanguag
     let tokens = query.split_whitespace().collect::<Vec<_>>();
     let mut matches = visible_nav_sections()
         .filter_map(|index| {
+            let message = SECTION_SEARCH_TERMS[index];
             let haystack = format!(
-                "{} {}",
-                SECTION_SEARCH_TERMS[index],
-                section_label(index, language).to_lowercase()
-            );
+                "{} {} {} {}",
+                crate::display::UiLanguage::EnUs.text(message),
+                crate::display::UiLanguage::ZhCn.text(message),
+                language.text(message),
+                section_label(index, language),
+            )
+            .to_lowercase();
             let words = haystack
                 .split(|ch: char| !ch.is_alphanumeric())
                 .filter(|word| !word.is_empty())
@@ -265,6 +277,26 @@ mod tests {
         assert!(matching_sections("API Providers", en).is_empty());
         assert!(matching_sections("供应商", zh).is_empty());
         assert_eq!(matching_sections("Agents", en), vec![10]);
+    }
+
+    #[test]
+    fn localized_search_finds_settings_and_preserves_aliases() {
+        use crate::display::UiLanguage;
+        for (query, section) in
+            [("フォント", 1), ("不透明度", 1), ("プロキシ", 5), ("ショートカット", 7), ("外観", 1)]
+        {
+            assert_eq!(
+                matching_sections(query, UiLanguage::JaJp).first(),
+                Some(&section),
+                "{query}"
+            );
+        }
+        for language in UiLanguage::ALL {
+            for query in ["FONT", "字体"] {
+                assert_eq!(matching_sections(query, *language).first(), Some(&1), "{query}");
+            }
+        }
+        assert!(matching_sections("存在しない設定", UiLanguage::JaJp).is_empty());
     }
 
     #[test]
