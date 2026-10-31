@@ -2,6 +2,28 @@
 # 0=query; 1..4097=move; 4098..8194=range start; 8195..12291=delete to endpoint.
 # 20000..999999=query with a host nonce, echoed in the response unit.
 # Readline rejects arguments above 1,000,000, so endpoints travel separately.
+__pebrel_pointer_prompt() {
+    [ "${__pebrel_editor_ready:-0}" = 1 ] || return 0
+    local boundary
+    if [ -n "${BASH_VERSION-}" ]; then
+        [[ $(declare -p PS1 2>/dev/null) =~ ^declare\ -[^[:space:]]*r ]] && return 0
+        boundary='\[\e]133;B\a\]'
+    else
+        [[ ${(t)PS1} == *readonly* ]] && return 0
+        boundary=$'%{\e]133;B\a%}'
+    fi
+    # Keep user prompt text and width accounting. Reapply after dynamic prompt
+    # hooks; a redisplay emits the same boundary without guessing its width.
+    [[ $PS1 == *"$boundary" ]] || PS1+=$boundary
+    return 0
+}
+
+if [ -n "${ZSH_VERSION-}" ]; then
+    # The existing precmd reporter runs before the user's prompt hooks.
+    # Append only our boundary after those hooks have finished changing PS1.
+    precmd_functions=(${precmd_functions:#__pebrel_pointer_prompt} __pebrel_pointer_prompt)
+fi
+
 __pebrel_pointer_supported() {
     [ "${__pebrel_editor_ready:-0}" = 1 ] || return 1
     local bindings digit
@@ -25,6 +47,7 @@ __pebrel_pointer_supported() {
 __pebrel_pointer_ready_report() {
     unset __pebrel_pointer_line __pebrel_pointer_point __pebrel_pointer_anchor
     if __pebrel_pointer_supported; then
+        if [ -n "${BASH_VERSION-}" ]; then __pebrel_pointer_prompt; fi
         printf '\033]1337;SetUserVar=pebrel_pointer_ready=%s\007' "$__pebrel_shell_token"
     fi
 }

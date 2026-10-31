@@ -116,6 +116,31 @@ class ShellPointerTests(unittest.TestCase):
                 self.action(session, 1 + 5)
                 self.assertEqual(self.editor.snapshot(session)[1:], (5, "echo 中文"))
 
+    def check_prompt_boundary(self, shell: str) -> None:
+        setup = "PROMPT_COMMAND='PS1=\"dynamic> \"'\n" if shell == "bash" else (
+            "user_prompt() { PS1='dynamic> '; }; precmd_functions=(user_prompt)\n"
+        )
+        session = self.start(shell, setup)
+        boundary = b"dynamic> \x1b]133;B\x07"
+        if boundary not in session.output:
+            session.wait(boundary)
+        # Repeated prompt changes and re-sourcing must retain exactly one
+        # boundary, after all printable user prompt cells.
+        adapter = Path(__file__).resolve().parents[2] / "nebula_terminal/src/tty/pointer.sh"
+        session.command(f"source {shlex.quote(str(adapter))}", boundary)
+        output = session.command(":", boundary)
+        self.assertEqual(output.count(b"\x1b]133;B\x07"), 1, output)
+        os.write(session.master, "echo 中文".encode())
+        self.assertEqual(self.query(session), (11, "echo 中文"))
+        self.action(session, 1 + 5)
+        self.assertEqual(self.editor.snapshot(session)[1:], (5, "echo 中文"))
+
+    def test_bash_marks_input_after_dynamic_prompt_without_duplicate_markers(self) -> None:
+        self.check_prompt_boundary("bash")
+
+    def test_zsh_marks_input_after_dynamic_prompt_without_duplicate_hooks(self) -> None:
+        self.check_prompt_boundary("zsh")
+
     def check_binding(self, shell: str, vi: bool = False) -> None:
         if vi:
             setup = "set -o vi\n" if shell == "bash" else "bindkey -v\n"
