@@ -64,6 +64,41 @@ fn command(argument: usize) -> Vec<u8> {
 }
 
 impl TerminalView {
+    fn shell_pointer_command(&self, argument: usize) -> Vec<u8> {
+        if !self.shell_pointer.owner.as_deref().is_some_and(|owner| owner.starts_with("pwsh:")) {
+            return command(argument);
+        }
+        let mode = self.term_mode();
+        let prefix =
+            super::super::keymap::encode(&gpui::Keystroke::parse("ctrl-shift-f10").unwrap(), &mode)
+                .unwrap();
+        let query =
+            super::super::keymap::encode(&gpui::Keystroke::parse("ctrl-shift-f12").unwrap(), &mode)
+                .unwrap();
+        let mut bytes = Vec::with_capacity(128);
+        for digit in argument.to_string().chars() {
+            bytes.extend_from_slice(&prefix);
+            bytes.extend(super::super::keymap::encode_choice_text(&digit.to_string(), &mode));
+        }
+        bytes.extend(query);
+        bytes
+    }
+
+    pub(super) fn shell_pointer_preserves_native_undo(&self, bytes: &[u8]) -> bool {
+        // PSReadLine uses Ctrl+X as its Emacs undo prefix and Ctrl+Z in Windows
+        // mode. Elsewhere these can suspend a process or end input; scope this
+        // exception to the current advertised native editor, never a TUI.
+        self.shell_pointer.owner.as_deref().is_some_and(|owner| owner.starts_with("pwsh:"))
+            && self.shell_pointer_allowed()
+            && ["ctrl-x", "ctrl-z"].iter().any(|key| {
+                super::super::keymap::encode(
+                    &gpui::Keystroke::parse(key).unwrap(),
+                    &self.term_mode(),
+                )
+                .is_some_and(|encoded| encoded == bytes)
+            })
+    }
+
     fn shell_pointer_allowed(&self) -> bool {
         self.exited.is_none()
             && self.shell_pointer.ready
@@ -75,6 +110,7 @@ impl TerminalView {
                 self.suggest.completion_context.owns_current(owner)
                     && (owner.starts_with("bash:")
                         || owner.starts_with("zsh:")
+                        || owner.starts_with("pwsh:")
                         || owner.starts_with("wsl|"))
             })
             && self.session.as_ref().is_some_and(|session| {
@@ -144,7 +180,7 @@ impl TerminalView {
             delete_requested: false,
             screen,
         });
-        self.write_bytes(command(nonce));
+        self.write_bytes(self.shell_pointer_command(nonce));
     }
 
     pub(super) fn observe_shell_pointer(
@@ -217,7 +253,7 @@ impl TerminalView {
         self.completion_editor.invalidate();
         self.editor_query_task = None;
         self.suggest.clear_completion_hints();
-        self.write_bytes(command(1 + end));
+        self.write_bytes(self.shell_pointer_command(1 + end));
         self.restore_shell_pointer_selection();
         if request.delete_requested {
             self.delete_shell_pointer_selection("delete", cx);
@@ -252,8 +288,8 @@ impl TerminalView {
             }
             return false;
         };
-        let mut bytes = command(4098 + selected.start);
-        bytes.extend(command(8195 + selected.end));
+        let mut bytes = self.shell_pointer_command(4098 + selected.start);
+        bytes.extend(self.shell_pointer_command(8195 + selected.end));
         // The editor checks the unchanged native buffer/cursor again for both
         // callbacks. Consume this key even on rejection; never delete elsewhere.
         self.write_editor_input(bytes, true, cx);
