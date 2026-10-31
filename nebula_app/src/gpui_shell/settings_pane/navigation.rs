@@ -40,8 +40,6 @@ pub(super) const SECTION_SEARCH_TERMS: [crate::i18n::Message; 12] = [
     crate::i18n::Message::SettingsSearchTermsMobile,
 ];
 
-pub(super) const HIDDEN_NAV_SECTIONS: &[usize] = &[3];
-
 /// 保留原来的分组展开顺序，组名不再渲染；数组里仍保存稳定的 [`SECTION_IDS`]
 /// 下标，不复制设置状态或路由。
 pub(super) const NAV_GROUPS: [(&str, &[usize]); 3] = [
@@ -69,7 +67,7 @@ pub(super) fn section_label(index: usize, language: crate::display::UiLanguage) 
 }
 
 pub(super) fn is_nav_section_visible(index: usize) -> bool {
-    !HIDDEN_NAV_SECTIONS.contains(&index)
+    index < SECTION_IDS.len()
 }
 
 pub(super) fn visible_nav_sections() -> impl Iterator<Item = usize> {
