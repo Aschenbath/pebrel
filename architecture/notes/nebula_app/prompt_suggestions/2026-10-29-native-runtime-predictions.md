@@ -97,6 +97,11 @@ The user's latest direction makes current conversation context the voice source.
 - Reading credentials/history or writing voice memory each turn: native context
   and an immutable resident snapshot make those costs unnecessary.
 
+Native executable resolution and terminal-preserving process handoff live in
+`platform/agent_launch.rs`; the prediction launcher owns only plugin arguments,
+compatibility and localized reporting. Filesystem fixtures use the platform alias
+helper so source-level platform branches do not spread into the adapter.
+
 ## Consequences
 
 Native acceptance stays explicit and never submits automatically. The settings

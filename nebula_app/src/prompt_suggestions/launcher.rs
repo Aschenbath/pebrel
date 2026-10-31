@@ -54,34 +54,13 @@ pub(crate) fn decorate(command: &str, quoted_executable: &str) -> Option<String>
 }
 
 fn agent_command(agent: Agent) -> Command {
-    #[cfg(windows)]
-    {
-        use crate::ai_agents::AgentKind;
-
-        let kind = match agent {
-            Agent::Claude => AgentKind::Claude,
-            Agent::Pi => AgentKind::Pi,
-            Agent::Opencode => AgentKind::OpenCode,
-        };
-        if let Some(executable) = crate::ai_hook::integrations::executable(kind) {
-            if executable.extension().is_some_and(|extension| extension.eq_ignore_ascii_case("ps1"))
-            {
-                // -File preserves script argument boundaries; never construct
-                // a PowerShell expression from native CLI arguments.
-                let powershell = std::env::var_os("SystemRoot")
-                    .map(std::path::PathBuf::from)
-                    .map(|root| root.join("System32/WindowsPowerShell/v1.0/powershell.exe"))
-                    .unwrap_or_else(|| "powershell.exe".into());
-                let mut command = Command::new(powershell);
-                command.args(["-NoLogo", "-NoProfile", "-File"]).arg(executable);
-                return command;
-            }
-            // Explicit .cmd/.bat paths use std's batch argument escaping.
-            // Bare program names only receive an implicit .exe search.
-            return Command::new(executable);
-        }
-    }
-    Command::new(agent.executable())
+    use crate::ai_agents::AgentKind;
+    let kind = match agent {
+        Agent::Claude => AgentKind::Claude,
+        Agent::Pi => AgentKind::Pi,
+        Agent::Opencode => AgentKind::OpenCode,
+    };
+    crate::platform::agent_launch::command(kind, agent.executable())
 }
 
 fn native_command(agent: Agent, args: &[OsString]) -> Command {
@@ -213,7 +192,7 @@ fn prediction_command(options: &Options) -> Result<Command, String> {
 pub(crate) fn run(options: Options) -> i32 {
     let settings = nebula_settings::RuntimeSettings::load();
     let language = crate::i18n::LanguagePreference::from(settings.language).resolved();
-    let mut command = if settings.prompt_suggestions.enabled {
+    let command = if settings.prompt_suggestions.enabled {
         match prediction_command(&options) {
             Ok(command) => command,
             Err(error) => {
@@ -232,22 +211,8 @@ pub(crate) fn run(options: Options) -> i32 {
     };
     // Inherit the current TTY, cwd and environment. No shell, PTY proxy or input
     // interception sits between the user and the native process.
-    #[cfg(unix)]
-    {
-        use std::os::unix::process::CommandExt as _;
-        let error = command.exec();
-        eprintln!(
-            "{}",
-            language.format(
-                crate::i18n::Message::PromptSuggestionsLauncherFailed,
-                &[("agent", options.agent.executable()), ("error", &error.to_string())]
-            )
-        );
-        127
-    }
-    #[cfg(not(unix))]
-    match command.status() {
-        Ok(status) => status.code().unwrap_or(1),
+    match crate::platform::agent_launch::handoff(command) {
+        Ok(code) => code,
         Err(error) => {
             eprintln!(
                 "{}",

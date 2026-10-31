@@ -172,14 +172,25 @@ mod tests {
         });
     }
 
-    #[cfg(unix)]
     #[test]
     fn existing_symlink_is_never_followed_or_replaced() {
         let directory = tempfile::tempdir().unwrap();
         let other = tempfile::tempdir().unwrap();
         let assets = [("pi/index.ts", "managed")];
         let root = directory.path().join(version(&assets));
-        std::os::unix::fs::symlink(other.path(), &root).unwrap();
+        // Preserve the Unix regression on hosts where directory symlinks are
+        // available. Windows may require a privilege absent from a test token.
+        if let Err(error) =
+            crate::platform::local_paths::symlink_directory_for_test(other.path(), &root)
+        {
+            if crate::platform::Platform::current() == crate::platform::Platform::Windows
+                && error.raw_os_error() == Some(1314)
+            {
+                eprintln!("directory symlink regression not run: {error}");
+                return;
+            }
+            panic!("directory symlink fixture: {error}");
+        }
         assert!(install_at(directory.path(), &assets).is_err());
         assert!(root.is_symlink());
         assert_eq!(std::fs::read_dir(other.path()).unwrap().count(), 0);
