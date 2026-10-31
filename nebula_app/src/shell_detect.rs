@@ -406,7 +406,6 @@ fn detect_windows() -> Vec<DetectedShell> {
 }
 
 /// Reuse directory import's executable validation, shell identity and arguments.
-#[cfg(any(windows, test))]
 fn find_windows_zsh(directories: impl IntoIterator<Item = PathBuf>) -> Option<DetectedShell> {
     directories.into_iter().filter(|directory| directory.is_absolute()).find_map(|directory| {
         let profile = crate::terminal_profiles::scan_directory(&directory)

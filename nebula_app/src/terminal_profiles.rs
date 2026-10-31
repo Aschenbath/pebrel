@@ -280,7 +280,6 @@ fn validate(profile: &TerminalProfile) -> io::Result<()> {
 mod tests {
     use super::{TerminalProfile, TerminalProfiles, scan_directory};
 
-    #[cfg(windows)]
     fn write_pe(path: &std::path::Path, machine: u16) {
         let mut bytes = vec![0_u8; 0x86];
         bytes[..2].copy_from_slice(b"MZ");
@@ -330,10 +329,9 @@ mod tests {
             let directory = temp.path().join(layout);
             std::fs::create_dir_all(&directory).unwrap();
             for name in ["bash.exe", "zsh.exe"] {
-                #[cfg(windows)]
-                write_pe(&directory.join(name), TEST_MACHINE);
-                #[cfg(not(windows))]
-                std::fs::write(directory.join(name), b"").unwrap();
+                // x86 PE fixtures are accepted on every supported Windows host
+                // and also exercise the same directory scan on Unix.
+                write_pe(&directory.join(name), 0x014c);
             }
 
             let found = scan_directory(temp.path()).unwrap();
