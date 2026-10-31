@@ -73,7 +73,15 @@ class PowerShellPointerTests(unittest.TestCase):
             "  & $global:QaOriginalReadLine\n"
             "}\n", encoding="utf-8",
         )
-        session = PowerShellSession(program, home, ["-NoLogo", "-NoProfile", "-NoExit", "-File", str(script)], {})
+        # .NET's named mutexes (including PSReadLine history initialization)
+        # require a real temporary directory on macOS even with SaveNothing.
+        # Keep it inside this fixture instead of inheriting the runner's home.
+        runtime_temp = home / "tmp"
+        runtime_temp.mkdir()
+        session = PowerShellSession(
+            program, home, ["-NoLogo", "-NoProfile", "-NoExit", "-File", str(script)],
+            {"TMPDIR": str(runtime_temp) + os.sep},
+        )
         self.addCleanup(session.close)
         import fcntl
         import struct
