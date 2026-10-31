@@ -33,6 +33,11 @@ pub fn connection_shell() -> &'static str {
     &SCRIPT
 }
 
+/// Native PSReadLine callbacks shared by the Unix and Windows shell bootstraps.
+pub fn powershell_editor() -> String {
+    format!("{}\n{}", include_str!("completion.ps1"), include_str!("pointer.ps1"))
+}
+
 /// Script text as a POSIX shell must see it: CRLF checkout line endings become LF.
 pub fn shell_line_endings(script: &str) -> Cow<'_, str> {
     // include_str! preserves checkout bytes. POSIX shells treat CR in a CRLF
