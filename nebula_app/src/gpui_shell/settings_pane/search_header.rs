@@ -282,14 +282,34 @@ mod tests {
     #[test]
     fn localized_search_finds_settings_and_preserves_aliases() {
         use crate::display::UiLanguage;
-        for (query, section) in
-            [("フォント", 1), ("不透明度", 1), ("プロキシ", 5), ("ショートカット", 7), ("外観", 1)]
-        {
+        for (query, section) in [
+            ("フォント", 1),
+            ("不透明度", 1),
+            ("プロキシ", 5),
+            ("ショートカット", 7),
+            ("外観", 1),
+            // Japanese is typed without spaces, so compounds must be listed.
+            ("背景画像", 1),
+            ("ぼかし", 1),
+            ("表示言語", 1),
+            ("暗くする", 1),
+            ("起動ディレクトリ", 2),
+            ("踏み台", 4),
+            ("キーバインド", 7),
+        ] {
             assert_eq!(
                 matching_sections(query, UiLanguage::JaJp).first(),
                 Some(&section),
                 "{query}"
             );
+        }
+        for (query, language) in [
+            ("blur", UiLanguage::EnUs),
+            ("language", UiLanguage::EnUs),
+            ("模糊", UiLanguage::ZhCn),
+            ("语言", UiLanguage::ZhCn),
+        ] {
+            assert_eq!(matching_sections(query, language).first(), Some(&1), "{query}");
         }
         for language in UiLanguage::ALL {
             for query in ["FONT", "字体"] {
